@@ -1,0 +1,45 @@
+# CUAV Neo3 GPS驱动编译配置
+# 用于RT-Thread K210 BSP项目集成
+
+# 驱动源文件
+GPS_DRIVER_SOURCES = \
+    drivers/drv_cuav_neo3.c
+
+# 驱动头文件目录
+GPS_DRIVER_INCLUDES = \
+    -I$(BSP_ROOT)/drivers
+
+# 编译标志
+GPS_DRIVER_CFLAGS = \
+    -DCUAV_NEO3_ENABLE \
+    -DUBLOX_PROTOCOL_SUPPORT \
+    -DRT_USING_UART2_GPS
+
+# 添加到RT-Thread构建系统
+ifeq ($(PKG_USING_CUAV_NEO3),y)
+    SOURCES += $(GPS_DRIVER_SOURCES)
+    INCLUDES += $(GPS_DRIVER_INCLUDES) 
+    CFLAGS += $(GPS_DRIVER_CFLAGS)
+endif
+
+# 确保在Kconfig中启用以下配置：
+# CONFIG_RT_USING_SERIAL=y
+# CONFIG_RT_USING_UART2=y
+# CONFIG_RT_SERIAL_USING_DMA=y (可选，提升性能)
+
+# 依赖的RT-Thread组件
+# - RT-Thread设备框架
+# - 串口驱动 
+# - 信号量和互斥锁
+# - 动态内存分配
+# - MSH命令行界面
+
+.PHONY: gps-driver-help
+gps-driver-help:
+	@echo "CUAV Neo3 GPS Driver Integration Guide:"
+	@echo "1. 确保UART2设备在RT-Thread BSP中已正确配置"
+	@echo "2. 在applications/main.c中调用cuav_neo3_init(\"uart2\")"
+	@echo "3. 使用cuav_neo3_get_data()获取GPS数据" 
+	@echo "4. 通过MSH命令'gps_status'查看GPS状态"
+	@echo "5. GPS协议：UBlox binary format @ 38400 baud"
+	@echo "6. 更新频率：10Hz，支持多种GNSS系统"

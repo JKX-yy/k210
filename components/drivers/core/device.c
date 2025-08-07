@@ -232,7 +232,7 @@ rt_err_t rt_device_open(rt_device_t dev, rt_uint16_t oflag)
     {
         if (device_init != RT_NULL)
         {
-            result = device_init(dev);
+            result = device_init(dev);   //初始化设备
             if (result != RT_EOK)
             {
                 LOG_E("To initialize device:%.*s failed. The error code is %d",

@@ -31,6 +31,9 @@
 // K210摄像头驱动
 #include "camera/drv_ov5640.h"
 
+// CUAV Neo3 GPS驱动
+#include "drivers/drv_cuav_neo3.h"
+
 // 车辆控制相关头文件
 #include <stdio.h>
 #include <stdlib.h>
@@ -279,19 +282,7 @@ static rt_timer_t mpu6050_timer = RT_NULL;      // MPU6050读取定时器 (100Hz
 static char detected_garbage[64];       // 检测到的垃圾类型
 static char gps_location[64];           // GPS位置信息
 
-// 全局GPS位置变量（实时更新）
-typedef struct {
-    volatile float latitude;        // 纬度
-    volatile float longitude;       // 经度
-    volatile float altitude;        // 海拔
-    volatile float speed;           // 速度 (km/h)
-    volatile float course;          // 航向 (度)
-    volatile uint8_t satellites;    // 卫星数量
-    volatile uint8_t fix_quality;   // 定位质量 (0=无效, 1=GPS, 2=DGPS)
-    volatile uint32_t timestamp;    // 时间戳
-    volatile uint8_t valid;         // 数据有效标志
-} gps_data_t;
-
+// 全局GPS位置变量（实时更新）- 现在使用CUAV Neo3驱动
 static gps_data_t current_gps = {
     .latitude = 39.9042f,    // 北京天安门坐标（默认值）
     .longitude = 116.4074f,
@@ -530,12 +521,28 @@ static uint32_t control_loop_count = 0;
 
 /*
  * GPS方向控制定时器回调 - 外环控制 (10Hz)
- * 功能：根据GPS位置计算目标航向和速度，更新导航指令
+ * 功能：从CUAV Neo3驱动获取GPS数据，计算目标航向和速度，更新导航指令
  */
 static void gps_control_timer_callback(void *parameter)
 {
     static uint32_t gps_control_counter = 0;
     gps_control_counter++;
+    
+    // 从CUAV Neo3驱动获取最新GPS数据
+    const cuav_neo3_data_t *neo3_data = cuav_neo3_get_data();
+    
+    if (neo3_data != RT_NULL && neo3_data->valid && neo3_data->fix_type >= 3) {
+        // 更新当前GPS位置
+        current_gps.latitude = neo3_data->latitude;
+        current_gps.longitude = neo3_data->longitude;
+        current_gps.altitude = neo3_data->altitude / 1000.0f;  // mm转m
+        current_gps.speed = neo3_data->ground_speed / 100.0f;  // cm/s转m/s
+        current_gps.course = neo3_data->heading * 1e-5f;       // 1e-5度转度
+        current_gps.satellites = neo3_data->satellites;
+        current_gps.fix_quality = neo3_data->fix_type;
+        current_gps.valid = 1;
+        current_gps.timestamp = rt_tick_get();
+    }
     
     if (current_patrol_mode != PATROL_MODE_STOP && current_gps.valid) {
         
@@ -802,7 +809,16 @@ static rt_err_t init_rt_thread_devices(void)
         return -RT_ERROR;
     }
     
-    // 3. 初始化GPIO控制引脚（电机和舵机）
+    // 3. 初始化CUAV Neo3 GPS驱动（UBlox协议）
+    if (cuav_neo3_init(GPS_UART_NAME) == RT_EOK) {
+        rt_kprintf("[Device] CUAV Neo3 GPS driver initialized successfully\n");
+        rt_kprintf("[Device] GPS: UBlox protocol, 38400 baud, 10Hz update rate\n");
+    } else {
+        rt_kprintf("[Warning] CUAV Neo3 GPS driver initialization failed\n");
+        rt_kprintf("[Warning] GPS functionality will be limited\n");
+    }
+    
+    // 4. 初始化GPIO控制引脚（电机和舵机）
     rt_pin_mode(MOTOR_PIN_1, PIN_MODE_OUTPUT);
     rt_pin_mode(MOTOR_PIN_2, PIN_MODE_OUTPUT);
     rt_pin_mode(SERVO_PIN, PIN_MODE_OUTPUT);
@@ -2581,14 +2597,7 @@ int main(void)
         rt_kprintf("[Init] Camera thread created with high priority\n");
     }
 
-    // 创建GPS线程
-    rt_thread_t gps_thread = rt_thread_create("gps", gps_thread_entry,
-                                              RT_NULL, THREAD_STACK_SIZE,
-                                              GPS_THREAD_PRIORITY, THREAD_TIMESLICE);
-    if (gps_thread != RT_NULL) {
-        rt_thread_startup(gps_thread);
-        rt_kprintf("[Init] GPS thread created\n");
-    }
+    // GPS解析线程已移至CUAV Neo3驱动内部
 
     // 创建SD卡存储线程 - 使用低优先级
     rt_thread_t sdcard_thread = rt_thread_create("sdcard", sdcard_thread_entry,
@@ -2626,6 +2635,45 @@ int main(void)
     rt_kprintf("[Init] Sensor Fusion: MPU6050 + Encoder + GPS for navigation\n");
     rt_kprintf("[Status] System ready for intelligent garbage patrol with real-time control\n");
     rt_kprintf("[Status] Multi-threading: Camera + GPS + Control + Protocol + Storage\n");
+    rt_kprintf("[GPS] CUAV Neo3 driver ready, use 'gps_status' command to check GPS data\n");
 
     return 0;
 }
+
+/* ==================== MSH调试命令 ==================== */
+
+/* MSH命令：显示当前GPS状态（使用CUAV Neo3驱动数据）*/
+static void cmd_gps_status_show(int argc, char **argv)
+{
+    const cuav_neo3_data_t *neo3_data = cuav_neo3_get_data();
+    
+    rt_kprintf("\n=== GPS Status (CUAV Neo3 + UBlox Protocol) ===\n");
+    
+    if (neo3_data != RT_NULL) {
+        rt_kprintf("Driver Status: Active\n");
+        rt_kprintf("GPS Valid: %s\n", neo3_data->valid ? "Yes" : "No");
+        rt_kprintf("Fix Type: %d (0=No Fix, 2=2D, 3=3D, 4=GNSS+DR)\n", neo3_data->fix_type);
+        rt_kprintf("Position: %.6f°, %.6f°, %.1fm\n", 
+                   neo3_data->latitude, neo3_data->longitude, neo3_data->altitude/1000.0f);
+        rt_kprintf("Speed: %.2f m/s, Heading: %.1f°\n", 
+                   neo3_data->ground_speed/100.0f, neo3_data->heading*1e-5f);
+        rt_kprintf("Accuracy: H=%.1fm, V=%.1fm\n", 
+                   neo3_data->horizontal_accuracy/1000.0f, neo3_data->vertical_accuracy/1000.0f);
+        rt_kprintf("Satellites: %d\n", neo3_data->satellites);
+        rt_kprintf("Time: %04d-%02d-%02d %02d:%02d:%02d UTC\n",
+                   neo3_data->year, neo3_data->month, neo3_data->day,
+                   neo3_data->hour, neo3_data->minute, neo3_data->second);
+        rt_kprintf("Last Update: %d ms ago\n", 
+                   (rt_tick_get() - neo3_data->last_update) * 1000 / RT_TICK_PER_SECOND);
+    } else {
+        rt_kprintf("Driver Status: Not initialized\n");
+    }
+    
+    rt_kprintf("Legacy GPS Data:\n");
+    rt_kprintf("  Pos: %.6f°, %.6f°, %.1fm\n", 
+               current_gps.latitude, current_gps.longitude, current_gps.altitude);
+    rt_kprintf("  Valid: %s, Satellites: %d, Fix: %d\n",
+               current_gps.valid ? "Yes" : "No", current_gps.satellites, current_gps.fix_quality);
+    rt_kprintf("==================================================\n");
+}
+MSH_CMD_EXPORT(cmd_gps_status_show, Show GPS status from CUAV Neo3 driver);

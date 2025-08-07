@@ -22,6 +22,7 @@
 #define RT_USING_SPI 
 #define BSP_USING_SPI1
 #define BSP_SPI1_USING_SS0
+
 #include <rtthread.h>  // RT-Thread操作系统核心头文件
 #include <rtdevice.h> // RT-Thread设备驱动框架头文件
 #include "../packages/K210-SDK-latest/lib/drivers/include/spi.h"   //K210  spi相关硬件配置

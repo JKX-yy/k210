@@ -229,7 +229,7 @@ int dfs_mount(const char   *device_name,
         /* which is a non-device filesystem mount */
         dev_id = NULL;
     }
-    else if ((dev_id = rt_device_find(device_name)) == NULL)
+    else if ((dev_id = rt_device_find(device_name)) == NULL) //找到设备 sd0 
     {
         /* no this device */
         rt_set_errno(-ENODEV);
@@ -322,7 +322,7 @@ int dfs_mount(const char   *device_name,
     /* open device, but do not check the status of device */
     if (dev_id != NULL)
     {
-        if (rt_device_open(fs->dev_id, RT_DEVICE_OFLAG_RDWR) != RT_EOK &&
+        if (rt_device_open(fs->dev_id, RT_DEVICE_OFLAG_RDWR) != RT_EOK &&      //open的时候init 初始化
             rt_device_open(fs->dev_id, RT_DEVICE_OFLAG_RDONLY) != RT_EOK)
         {
             /* The underlying device has error, clear the entry. */
