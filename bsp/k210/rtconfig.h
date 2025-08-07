@@ -186,6 +186,8 @@
 #define RT_USING_SERIAL_V1
 #define RT_SERIAL_USING_DMA
 #define RT_SERIAL_RB_BUFSZ 64
+#define RT_USING_ADC
+#define RT_USING_RTC
 #define RT_USING_SPI
 #define RT_USING_SPI_MSD
 #define RT_USING_SFUD
@@ -193,6 +195,10 @@
 #define RT_SFUD_USING_FLASH_INFO_TABLE
 #define RT_SFUD_SPI_MAX_HZ 50000000
 #define RT_DEBUG_SFUD
+#define RT_USING_SENSOR
+#define RT_USING_SENSOR_CMD
+#define RT_USING_TOUCH
+#define RT_USING_LCD
 #define RT_USING_PIN
 #define RT_USING_KTIME
 /* end of Device Drivers */
@@ -357,6 +363,9 @@
 
 #define PKG_USING_K210_SDK
 #define PKG_USING_K210_SDK_LATEST_VERSION
+#define PKG_USING_KENDRYTE_SDK
+#define PKG_USING_KENDRYTE_SDK_LATEST_VERSION
+#define PKG_KENDRYTE_SDK_VERNUM 0x9999
 /* end of Kendryte SDK */
 
 /* WCH HAL & SDK Drivers */
@@ -374,6 +383,14 @@
 /* NXP HAL & SDK Drivers */
 
 /* end of NXP HAL & SDK Drivers */
+
+/* NUVOTON Drivers */
+
+/* end of NUVOTON Drivers */
+
+/* GD32 Drivers */
+
+/* end of GD32 Drivers */
 /* end of HAL & SDK Drivers */
 
 /* sensors drivers */
@@ -383,6 +400,12 @@
 /* touch drivers */
 
 /* end of touch drivers */
+#define PKG_USING_GC9A01
+#define PKG_USING_GC9A01_SPI_BUS_NAME "spi0"
+#define PKG_USING_GC9A01_DC_PIN 97
+#define PKG_USING_GC9A01_RES_PIN 126
+#define PKG_USING_GC9A01_CS_PIN 35
+#define PKG_USING_GC9A01_LATEST_VERSION
 /* end of peripheral libraries and drivers */
 
 /* AI packages */
@@ -465,7 +488,45 @@
 #define BSP_USING_UART1
 #define BSP_UART1_TXD_PIN 20
 #define BSP_UART1_RXD_PIN 21
+#define BSP_USING_UART2
+#define BSP_UART2_TXD_PIN 28
+#define BSP_UART2_RXD_PIN 27
+#define BSP_USING_UART3
+#define BSP_UART3_TXD_PIN 22
+#define BSP_UART3_RXD_PIN 23
 /* end of General Purpose UARTs */
+#define BSP_USING_SPI1
+#define BSP_SPI1_CLK_PIN 29
+#define BSP_SPI1_D0_PIN 30
+#define BSP_SPI1_D1_PIN 31
+#define BSP_SPI1_USING_SS0
+#define BSP_SPI1_SS0_PIN 32
+#define BSP_SPI1_USING_SS1
+#define BSP_SPI1_SS1_PIN 25
+#define BSP_SPI1_USING_SS2
+#define BSP_SPI1_SS2_PIN 26
+#define BSP_SPI1_USING_SS3
+#define BSP_SPI1_SS3_PIN 27
+#define BSP_USING_LCD
+#define BSP_LCD_CS_PIN 6
+#define BSP_LCD_WR_PIN 7
+#define BSP_LCD_DC_PIN 8
+#define BSP_LCD_RST_PIN -1
+#define BSP_LCD_BACKLIGHT_PIN -1
+#define BSP_LCD_BACKLIGHT_ACTIVE_LOW
+#define BSP_LCD_CLK_FREQ 15000000
+#define BSP_BOARD_K210_OPENMV_TEST
+#define BSP_LCD_X_MAX 240
+#define BSP_LCD_Y_MAX 320
+#define BSP_USING_CAMERA
+#define BSP_CAMERA_SCCB_SDA_PIN 9
+#define BSP_CAMERA_SCCB_SCLK_PIN 10
+#define BSP_CAMERA_CMOS_RST_PIN 11
+#define BSP_CAMERA_CMOS_VSYNC_PIN 12
+#define BSP_CAMERA_CMOS_PWDN_PIN 13
+#define BSP_CAMERA_CMOS_XCLK_PIN 14
+#define BSP_CAMERA_CMOS_PCLK_PIN 15
+#define BSP_CAMERA_CMOS_HREF_PIN 17
 /* end of Hardware Drivers Config */
 #define __STACKSIZE__ 4096
 

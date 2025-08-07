@@ -180,22 +180,31 @@ rt_err_t rt_completion_wait_flags_noisr(struct rt_completion *completion,
  *          RT_EEMPTY if wakeup failure and the completion is set to completed.
  *          RT_EBUSY if the completion is still in completed state
  */
+/*
+从中断或其他上下文中唤醒一个因 rt_completion_wait() 而阻塞的线程，并设置唤醒状态。
+*/
 rt_err_t rt_completion_wakeup_by_errno(struct rt_completion *completion,
                                        rt_err_t thread_errno)
 {
     rt_base_t level;
     rt_err_t error;
     rt_thread_t suspend_thread;
-    RT_ASSERT(completion != RT_NULL);
+    RT_ASSERT(completion != RT_NULL);  /*定义中间变量。
+RT_ASSERT(...) 确保传进来的 completion 不为空，防止异常。*/
+/*因为自旋锁避免了操作系统进程调度和线程切换，所以自旋锁通常适用在时间比较短的情况下。由于这个原因，操作系统的内核经常使用自旋锁。但是，如果长时间上锁的话，自旋锁会非常耗费性能，它阻止了其他线程的运行和调度。线程持有锁的时间越长，则持有该锁的线程将被 OS(Operating System) 调度程序中断的风险越大。如果发生中断情况，那么其他线程将保持旋转状态(反复尝试获取锁)，而持有该锁的线程并不打算释放锁，这样导致的是结果是无限期推迟，直到持有锁的线程可以完成并释放它为止。*/
+/*上锁：进入临界区，禁止中断并获得 _completion_lock 自旋锁；
 
+保证后面访问 susp_thread_n_flag 是安全的，避免并发冲突。*/
     level = rt_spin_lock_irqsave(&_completion_lock);
     if (RT_COMPLETION_FLAG(completion) == RT_COMPLETED)
     {
         rt_spin_unlock_irqrestore(&_completion_lock, level);
         return -RT_EBUSY;
+        /*如果这个 completion 已经被标记为完成了（即别人唤醒过），就直接返回错误 -RT_EBUSY；
+不能重复唤醒同一个完成量（这是为了防止重复唤醒同一个线程）。*/
     }
 
-    suspend_thread = RT_COMPLETION_THREAD(completion);
+    suspend_thread = RT_COMPLETION_THREAD(completion); //从 completion->susp_thread_n_flag 中解析出等待这个完成事件的线程指针（rt_thread_t）；如果没有线程在等，返回 NULL。
     if (suspend_thread)
     {
         /* there is one thread in suspended list */
@@ -217,7 +226,7 @@ rt_err_t rt_completion_wakeup_by_errno(struct rt_completion *completion,
         /* no thread waiting */
         error = -RT_EEMPTY;
     }
-
+        //RT_COMPLETION_NEW_STAT() 是一个宏，把线程指针和完成标志合成一个 rt_atomic_t 值；
     completion->susp_thread_n_flag = RT_COMPLETION_NEW_STAT(RT_NULL, RT_COMPLETED);
 
     rt_spin_unlock_irqrestore(&_completion_lock, level);

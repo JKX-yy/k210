@@ -84,7 +84,7 @@ rt_base_t rt_spin_lock_irqsave(struct rt_spinlock *lock)
 {
     rt_base_t level;
 
-    level = rt_hw_local_irq_disable();
+    level = rt_hw_local_irq_disable(); //关中断
     rt_enter_critical();
     rt_hw_spin_lock(&lock->lock);
     RT_SPIN_LOCK_DEBUG(lock);

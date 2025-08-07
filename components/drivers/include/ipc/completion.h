@@ -27,6 +27,9 @@ struct rt_completion
 {
     /* suspended thread, and completed flag */
     rt_atomic_t susp_thread_n_flag;
+    /*
+    rt_atomic_t 是 RT-Thread 实时操作系统中的一个 原子类型，用于在并发环境中实现 原子操作，以避免竞争条件（race condition）。
+    */
 };
 
 #define RT_COMPLETION_INIT(comp) {0}

@@ -134,7 +134,7 @@
 #define MSH_USING_BUILT_IN_COMMANDS
 #define FINSH_USING_DESCRIPTION
 #define FINSH_ARG_MAX 10
-#define FINSH_USING_OPTION_COMPLETION
+#define FINSH_USING_OPTION_
 
 /* DFS: device virtual file system */
 

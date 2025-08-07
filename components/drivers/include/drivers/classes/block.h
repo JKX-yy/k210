@@ -25,9 +25,9 @@
  */
 struct rt_device_blk_geometry
 {
-    rt_uint64_t sector_count;                           /**< count of sectors */
-    rt_uint32_t bytes_per_sector;                       /**< number of bytes per sector */
-    rt_uint32_t block_size;                             /**< number of bytes to erase one block */
+    rt_uint64_t sector_count;                           /**< count of sectors 扇区数  */
+    rt_uint32_t bytes_per_sector;                       /**< number of bytes per sector  每个扇区的字节数 */
+    rt_uint32_t block_size;                             /**< number of bytes to erase one block  块大小  一般块大小=扇区 */
 };
 
 /**

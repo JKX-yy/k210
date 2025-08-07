@@ -8,10 +8,19 @@
  * 2019-03-19     ZYH          first version
  */
 
+#define BSP_USING_SPI1
+#define BSP_SPI1_USING_SS0
+#define BSP_SPI1_CLK_PIN 29  //时钟线
+#define BSP_SPI1_D0_PIN 30 //MOSI
+#define BSP_SPI1_D1_PIN 31  //MISO
+#define BSP_SPI1_SS0_PIN 32
+
 #include <rtthread.h>
 #include <fpioa.h>
 #include <drv_io_config.h>
 #include <sysctl.h>
+// #include <rtconfig.h>
+#include "../rtconfig.h"
 
 #define HS_GPIO(n) (FUNC_GPIOHS0 + n)
 

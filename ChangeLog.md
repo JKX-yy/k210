@@ -224,7 +224,7 @@ Change Log Since v5.1.0 Release
     * close can irq before release fifo
     * fix can warning in 64bit cpu [(#8772)](https://github.com/RT-Thread/rt-thread/pull/8772)
     * fix compile warning in 64 bits arch cpu [(#8739)](https://github.com/RT-Thread/rt-thread/pull/8739)
-  * **sdio:**
+  * **:**
     * fix a bug that read members in non-existent functions
     * fix an issue where repeated remove of card resulted in assertions
     * Fix the issue where ART-PI smart cannot read partitions on SD/EMMC.[(#9058)](https://github.com/RT-Thread/rt-thread/pull/9058)

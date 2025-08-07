@@ -126,7 +126,7 @@ rt_err_t rt_spi_bus_attach_device(struct rt_spi_device *device,
 rt_err_t rt_spi_bus_configure(struct rt_spi_device *device)
 {
     rt_err_t result = -RT_ERROR;
-
+    //配置bus  总线 1 2 3   上一部是cs和config
     if (device->bus != RT_NULL)
     {
         result = rt_mutex_take(&(device->bus->lock), RT_WAITING_FOREVER);
@@ -134,7 +134,7 @@ rt_err_t rt_spi_bus_configure(struct rt_spi_device *device)
         {
             if (device->bus->owner == device)
             {
-                /* current device is using, re-configure SPI bus */
+                /* current device is using, re-configure SPI bus 如果当前设备已经是总线的拥有者，允许重新配置。调用 configure 方法重新配置总线参数。*/
                 result = device->bus->ops->configure(device, &device->config);
                 if (result != RT_EOK)
                 {
@@ -167,9 +167,10 @@ rt_err_t rt_spi_configure(struct rt_spi_device        *device,
     RT_ASSERT(device != RT_NULL);
     RT_ASSERT(cfg != RT_NULL);
 
-    /* reset the CS pin */
+    /* reset the CS pin 配置片选引脚  高低电平*/
     if (device->cs_pin != PIN_NONE)
     {
+        //获取锁
         rt_err_t result = rt_mutex_take(&(device->bus->lock), RT_WAITING_FOREVER);
         if (result == RT_EOK)
         {
@@ -202,7 +203,7 @@ rt_err_t rt_spi_configure(struct rt_spi_device        *device,
     device->config.mode       = cfg->mode & RT_SPI_MODE_MASK;
     device->config.max_hz     = cfg->max_hz;
 
-    return rt_spi_bus_configure(device);
+    return rt_spi_bus_configure(device); //配置总线 
 }
 
 rt_err_t rt_spi_send_then_send(struct rt_spi_device *device,
@@ -519,7 +520,7 @@ rt_err_t rt_spi_take_bus(struct rt_spi_device *device)
     RT_ASSERT(device != RT_NULL);
     RT_ASSERT(device->bus != RT_NULL);
 
-    result = rt_mutex_take(&(device->bus->lock), RT_WAITING_FOREVER);
+    result = rt_mutex_take(&(device->bus->lock), RT_WAITING_FOREVER);//获取锁
     if (result != RT_EOK)
     {
         return -RT_EBUSY;
@@ -532,7 +533,7 @@ rt_err_t rt_spi_take_bus(struct rt_spi_device *device)
         result = device->bus->ops->configure(device, &device->config);
         if (result == RT_EOK)
         {
-            /* set SPI bus owner */
+            /* set SPI bus owner   设置owner*/
             device->bus->owner = device;
         }
         else
@@ -556,7 +557,19 @@ rt_err_t rt_spi_release_bus(struct rt_spi_device *device)
     /* release lock */
     return rt_mutex_release(&(device->bus->lock));
 }
+/*
 
+这个函数 rt_spi_take 的作用是控制 SPI 设备的片选信号（CS）拉低，以便开始与 SPI 设备进行通信。具体流程如下：
+
+参数检查：通过 RT_ASSERT 宏确保传入的 device 和其所属的 bus 都不为 NULL，防止空指针异常。
+初始化消息结构体：用 rt_memset 清零 message 结构体，保证所有字段初始为 0。
+设置片选信号：将 message.cs_take 设为 1，表示需要拉低片选信号（通常 SPI 设备片选为低电平有效）。
+调用底层传输函数：通过 device->bus->ops->xfer 方法，将 message 发送到 SPI 总线，实际完成片选信号的控制。
+错误处理：如果底层传输返回值小于 0，表示操作失败，直接返回错误码。
+成功返回：如果没有错误，返回 RT_EOK，表示操作成功。
+总结：
+rt_spi_take 用于开始一次 SPI 设备的通信前，拉低片选信号，确保后续的数据传输针对目标设备。
+*/
 rt_err_t rt_spi_take(struct rt_spi_device *device)
 {
     rt_ssize_t result;
@@ -577,6 +590,7 @@ rt_err_t rt_spi_take(struct rt_spi_device *device)
     return RT_EOK;
 }
 
+//释放spi设备
 rt_err_t rt_spi_release(struct rt_spi_device *device)
 {
     rt_ssize_t result;

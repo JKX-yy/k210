@@ -1297,10 +1297,10 @@ enum rt_device_class_type
 #define RT_DEVICE_FLAG_STREAM           0x040           /**< stream mode */
 #define RT_DEVICE_FLAG_DYNAMIC          0x080           /**< device is determined when open() */
 
-#define RT_DEVICE_FLAG_INT_RX           0x100           /**< INT mode on Rx */
-#define RT_DEVICE_FLAG_DMA_RX           0x200           /**< DMA mode on Rx */
-#define RT_DEVICE_FLAG_INT_TX           0x400           /**< INT mode on Tx */
-#define RT_DEVICE_FLAG_DMA_TX           0x800           /**< DMA mode on Tx */
+#define RT_DEVICE_FLAG_INT_RX           0x100           /**< INT mode on Rx 接收数据时使用中断模式（CPU 主动响应数据到达）*/
+#define RT_DEVICE_FLAG_DMA_RX           0x200           /**< DMA mode on Rx 接收数据时使用 DMA 模式（硬件自动搬运数据，不占用 CPU）*/
+#define RT_DEVICE_FLAG_INT_TX           0x400           /**< INT mode on Tx 发送数据时使用中断模式（CPU 参与每次数据发送）*/
+#define RT_DEVICE_FLAG_DMA_TX           0x800           /**< DMA mode on Tx 发送数据时使用 DMA 模式（硬件自动发送，CPU 仅初始化）*/
 
 #define RT_DEVICE_OFLAG_CLOSE           0x000           /**< device is closed */
 #define RT_DEVICE_OFLAG_RDONLY          0x001           /**< read only access */

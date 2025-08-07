@@ -867,11 +867,11 @@ rt_weak void *rt_calloc(rt_size_t count, rt_size_t size)
     void *p;
 
     /* allocate 'count' objects of size 'size' */
-    p = rt_malloc(count * size);
+    p = rt_malloc(count * size);  //使用 RT-Thread 的 rt_malloc() 分配总共 count * size 字节的内存。
     /* zero the memory */
     if (p)
     {
-        rt_memset(p, 0, count * size);
+        rt_memset(p, 0, count * size); //如果成功分配内存，则调用 rt_memset() 把内存内容全设置为 0（零初始化）。
     }
     return p;
 }

@@ -94,12 +94,12 @@
  */
 typedef enum
 {
-    MSD_CARD_TYPE_UNKNOWN = 0,                      /**< unknown */
-    MSD_CARD_TYPE_MMC,                              /**< MultiMedia Card */
-    MSD_CARD_TYPE_SD_V1_X,                          /**< Ver 1.X  Standard Capacity SD Memory Card */
-    MSD_CARD_TYPE_SD_V2_X,                          /**< Ver 2.00 or later Standard Capacity SD Memory Card */
-    MSD_CARD_TYPE_SD_SDHC,                          /**< High Capacity SD Memory Card */
-    MSD_CARD_TYPE_SD_SDXC,                          /**< later Extended Capacity SD Memory Card */
+    MSD_CARD_TYPE_UNKNOWN = 0,                      /**< unknown 未知类型 */
+    MSD_CARD_TYPE_MMC,                              /**< MultiMedia Card 多媒体卡，容量一般为几MB到几百MB */
+    MSD_CARD_TYPE_SD_V1_X,                          /**< Ver 1.X  Standard Capacity SD Memory Card FAT16 标准容量SD卡，容量一般为几MB到2GB */
+    MSD_CARD_TYPE_SD_V2_X,                          /**< Ver 2.00 or later Standard Capacity SD Memory Card 标准容量SD卡，容量一般为几MB到2GB */
+    MSD_CARD_TYPE_SD_SDHC,                          /**< High Capacity SD Memory Card 高容量SD卡，容量范围为4GB~32GB */
+    MSD_CARD_TYPE_SD_SDXC,                          /**< later Extended Capacity SD Memory Card 扩展容量SD卡，容量大于32GB，最大可达2TB */
 }msd_card_type;
 
 typedef enum
@@ -116,9 +116,9 @@ typedef enum
 
 struct msd_device
 {
-    struct rt_device                parent;      /**< RT-Thread device struct */
-    struct rt_device_blk_geometry   geometry;    /**< sector size, sector count */
-    struct rt_spi_device *          spi_device;  /**< SPI interface */
+    struct rt_device                parent;      /**< RT-Thread device struct继承 RT-Thread 的标准设备结构体，实现设备模型的统一接口。  */
+    struct rt_device_blk_geometry   geometry;    /**< sector size, sector count 描述块设备的几何属性（如扇区大小、总扇区数等）。 块结构 扇区大小  扇区字节数  块大小*/
+    struct rt_spi_device *          spi_device;  /**< SPI interface 这是 RT-Thread 中 SPI 总线设备的指针，通过它来与底层硬件 SPI 控制器通信。*/
     msd_card_type                   card_type;   /**< card type: MMC SD1.x SD2.0 SDHC SDXC */
     uint32_t                        max_clock;   /**< MAX SPI clock */
 };

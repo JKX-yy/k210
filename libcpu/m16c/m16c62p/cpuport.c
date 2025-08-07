@@ -96,9 +96,17 @@ rt_base_t rt_hw_interrupt_disable(void)
 {
     register rt_uint16_t temp;
 
-    asm("STC  FLG, %0":"=r" (temp));
-    asm("FCLR I");
-
+    asm("STC  FLG, %0":"=r" (temp));// 读取中断标志
+    asm("FCLR I");   // 清除中断使能位 I（Interrupt）
+/*
+这是一个比较老的 CPU 中断控制方式：
+I = 1：允许中断；
+I = 0：禁止所有可屏蔽中断（maskable interrupts）；
+但依然允许 不可屏蔽中断（NMI） 存在。
+类型	是否被关闭？	原因
+✅ 可屏蔽中断（IRQ）	是	FCLR I 会禁止它们
+❌ 不可屏蔽中断（NMI）	否	这种中断不受 I 位控制
+*/
     return (rt_base_t)temp;
 }
 

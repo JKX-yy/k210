@@ -17,6 +17,9 @@ env = Environment(tools = ['mingw'],
     AR = rtconfig.AR, ARFLAGS = '-rc',
     LINK = rtconfig.LINK, LINKFLAGS = rtconfig.LFLAGS)
 env.PrependENVPath('PATH', rtconfig.EXEC_PATH)
+# 手动插入你想优先包含的 spi.h 所在目录
+env.Prepend(CPPPATH=[os.path.join(RTT_ROOT, 'bsp/k210/packages/K210-SDK-latest/lib/drivers/include')])
+
 env['ASCOM'] = env['ASPPCOM']
 
 Export('RTT_ROOT')
