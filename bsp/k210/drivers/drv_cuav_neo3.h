@@ -113,7 +113,7 @@ typedef enum {
 
 /* GPS驱动结构体 */
 typedef struct {
-    rt_device_t uart_device;                       // UART设备句柄
+    rt_device_t uart_device;                       // UART设备句柄00
     rt_thread_t parse_thread;                      // 解析线程
     rt_mutex_t data_mutex;                         // 数据互斥锁
     rt_sem_t data_sem;                             // 数据信号量
